@@ -21,6 +21,7 @@ import { Route as ListListIdRouteImport } from './routes/list.$listId'
 import { Route as GenreGenreIdRouteImport } from './routes/genre.$genreId'
 import { Route as ChatPeerIdRouteImport } from './routes/chat.$peerId'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
+import { Route as UUidFollowersRouteImport } from './routes/u.$uid.followers'
 
 const TrendingRoute = TrendingRouteImport.update({
   id: '/trending',
@@ -82,6 +83,11 @@ const AnimeAnimeIdRoute = AnimeAnimeIdRouteImport.update({
   path: '/anime/$animeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUidFollowersRoute = UUidFollowersRouteImport.update({
+  id: '/followers',
+  path: '/followers',
+  getParentRoute: () => UUidRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,8 +100,9 @@ export interface FileRoutesByFullPath {
   '/chat/$peerId': typeof ChatPeerIdRoute
   '/genre/$genreId': typeof GenreGenreIdRoute
   '/list/$listId': typeof ListListIdRoute
-  '/u/$uid': typeof UUidRoute
+  '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
+  '/u/$uid/followers': typeof UUidFollowersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,8 +115,9 @@ export interface FileRoutesByTo {
   '/chat/$peerId': typeof ChatPeerIdRoute
   '/genre/$genreId': typeof GenreGenreIdRoute
   '/list/$listId': typeof ListListIdRoute
-  '/u/$uid': typeof UUidRoute
+  '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
+  '/u/$uid/followers': typeof UUidFollowersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,8 +131,9 @@ export interface FileRoutesById {
   '/chat/$peerId': typeof ChatPeerIdRoute
   '/genre/$genreId': typeof GenreGenreIdRoute
   '/list/$listId': typeof ListListIdRoute
-  '/u/$uid': typeof UUidRoute
+  '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
+  '/u/$uid/followers': typeof UUidFollowersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/list/$listId'
     | '/u/$uid'
     | '/watch/$episodeId'
+    | '/u/$uid/followers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/list/$listId'
     | '/u/$uid'
     | '/watch/$episodeId'
+    | '/u/$uid/followers'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/list/$listId'
     | '/u/$uid'
     | '/watch/$episodeId'
+    | '/u/$uid/followers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -182,7 +194,7 @@ export interface RootRouteChildren {
   ChatPeerIdRoute: typeof ChatPeerIdRoute
   GenreGenreIdRoute: typeof GenreGenreIdRoute
   ListListIdRoute: typeof ListListIdRoute
-  UUidRoute: typeof UUidRoute
+  UUidRoute: typeof UUidRouteWithChildren
   WatchEpisodeIdRoute: typeof WatchEpisodeIdRoute
 }
 
@@ -272,8 +284,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimeAnimeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$uid/followers': {
+      id: '/u/$uid/followers'
+      path: '/followers'
+      fullPath: '/u/$uid/followers'
+      preLoaderRoute: typeof UUidFollowersRouteImport
+      parentRoute: typeof UUidRoute
+    }
   }
 }
+
+interface UUidRouteChildren {
+  UUidFollowersRoute: typeof UUidFollowersRoute
+}
+
+const UUidRouteChildren: UUidRouteChildren = {
+  UUidFollowersRoute: UUidFollowersRoute,
+}
+
+const UUidRouteWithChildren = UUidRoute._addFileChildren(UUidRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -286,7 +315,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatPeerIdRoute: ChatPeerIdRoute,
   GenreGenreIdRoute: GenreGenreIdRoute,
   ListListIdRoute: ListListIdRoute,
-  UUidRoute: UUidRoute,
+  UUidRoute: UUidRouteWithChildren,
   WatchEpisodeIdRoute: WatchEpisodeIdRoute,
 }
 export const routeTree = rootRouteImport
