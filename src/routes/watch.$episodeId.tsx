@@ -64,6 +64,17 @@ function WatchPage() {
     }
   }, [data, streamUrl]);
 
+  // Award XP for watching (once per episode per 6h)
+  useEffect(() => {
+    if (!user || !episodeId || !streamUrl) return;
+    const t = setTimeout(() => {
+      awardWatchXp(user.uid, episodeId, 10)
+        .then((ok) => { if (ok) toast.success("+10 XP"); })
+        .catch(() => {});
+    }, 30_000);
+    return () => clearTimeout(t);
+  }, [user, episodeId, streamUrl]);
+
   const pickServer = async (id: string, label: string) => {
     setLoadingServer(true);
     setActiveServer(id);
