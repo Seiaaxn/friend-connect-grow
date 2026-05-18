@@ -5,6 +5,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, ChevronDown, Server, Ext
 import { svEpisode, svServer } from "@/lib/sankavollerei";
 import { toast } from "sonner";
 import { CommentBox } from "@/components/CommentBox";
+import { useAuth } from "@/lib/useAuth";
+import { awardWatchXp } from "@/lib/social";
 
 export const Route = createFileRoute("/watch/$episodeId")({
   component: WatchPage,
