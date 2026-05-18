@@ -9,12 +9,5 @@
       "source": "/((?!api|favicon.ico|assets/).*)",
       "destination": "/api/ssr"
     }
-  ],
-  "functions": {
-    "api/**/*.{ts,js,mjs,cjs}": {
-      "runtime": "nodejs22.x",
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  }
+  ]
 }
