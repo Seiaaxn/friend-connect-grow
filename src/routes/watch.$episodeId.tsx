@@ -6,7 +6,7 @@ import { svEpisode, svServer } from "@/lib/sankavollerei";
 import { toast } from "sonner";
 import { CommentBox } from "@/components/CommentBox";
 import { useAuth } from "@/lib/useAuth";
-import { awardWatchXp } from "@/lib/social";
+import { awardWatchXp, recordWatch } from "@/lib/social";
 
 export const Route = createFileRoute("/watch/$episodeId")({
   component: WatchPage,
