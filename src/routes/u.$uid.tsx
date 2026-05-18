@@ -100,9 +100,20 @@ function ProfilePage() {
           </div>
           <p className="text-xs text-muted-foreground mt-1">{profile.email}</p>
 
+          <div className="mt-4 max-w-xs mx-auto">
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span className="font-bold text-primary">Level {level}</span>
+              <span className="text-muted-foreground">{current}/{needed} XP</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, progress * 100)}%` }} />
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-1">Total {xp} XP</div>
+          </div>
+
           <div className="mt-5 flex items-center justify-center gap-8 text-sm">
-            <div><b className="text-lg">{followers.length}</b><div className="text-xs text-muted-foreground uppercase">Pengikut</div></div>
-            <div><b className="text-lg">{following.length}</b><div className="text-xs text-muted-foreground uppercase">Mengikuti</div></div>
+            <Link to="/u/$uid/followers" params={{ uid }} className="hover:text-primary"><b className="text-lg">{followers.length}</b><div className="text-xs text-muted-foreground uppercase">Pengikut</div></Link>
+            <Link to="/u/$uid/following" params={{ uid }} className="hover:text-primary"><b className="text-lg">{following.length}</b><div className="text-xs text-muted-foreground uppercase">Mengikuti</div></Link>
           </div>
 
           {!isMe && (
