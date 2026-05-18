@@ -1,7 +1,51 @@
 // Followers / following helpers backed by Firebase Realtime DB.
-import { ref, set, remove, onValue, get, push, serverTimestamp, query, limitToLast, update } from "firebase/database";
+import { ref, set, remove, onValue, get, push, serverTimestamp, query, limitToLast, update, runTransaction } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
+
+// ============= XP / Level System =============
+// Stored at users/{uid}/xp (number). Level derived from XP.
+// Curve: level n requires n * 100 cumulative XP (1->100, 2->300, 3->600...).
+// Formula: level = floor((-1 + sqrt(1 + 8*xp/100)) / 2) + 1
+export function levelFromXp(xp: number): { level: number; current: number; needed: number; progress: number } {
+  const safe = Math.max(0, xp || 0);
+  const level = Math.max(1, Math.floor((-1 + Math.sqrt(1 + (8 * safe) / 100)) / 2) + 1);
+  const xpForLevel = (n: number) => (n * (n - 1) * 100) / 2; // cumulative xp needed to reach level n
+  const base = xpForLevel(level);
+  const next = xpForLevel(level + 1);
+  const current = safe - base;
+  const needed = next - base;
+  return { level, current, needed, progress: needed > 0 ? current / needed : 0 };
+}
+
+export async function addXp(uid: string, amount: number) {
+  if (!uid || !amount) return;
+  await runTransaction(ref(db, `users/${uid}/xp`), (v) => (typeof v === "number" ? v : 0) + amount);
+  await update(ref(db, `users/${uid}`), { updatedAt: serverTimestamp() });
+}
+
+// Cooldown helper: only award XP for an episode once per user per 6h.
+export async function awardWatchXp(uid: string, episodeId: string, amount = 10) {
+  if (!uid || !episodeId) return false;
+  const key = `xpLog/${uid}/${episodeId}`;
+  const snap = await get(ref(db, key));
+  const last = snap.exists() ? Number(snap.val()) : 0;
+  const SIX_H = 6 * 60 * 60 * 1000;
+  if (Date.now() - last < SIX_H) return false;
+  await set(ref(db, key), Date.now());
+  await addXp(uid, amount);
+  return true;
+}
+
+export function useXp(uid?: string) {
+  const [xp, setXp] = useState<number>(0);
+  useEffect(() => {
+    if (!uid) { setXp(0); return; }
+    const unsub = onValue(ref(db, `users/${uid}/xp`), (s) => setXp(Number(s.val() ?? 0)));
+    return () => unsub();
+  }, [uid]);
+  return { xp, ...levelFromXp(xp) };
+}
 
 // Profiles: users/{uid} = { displayName, email, photoURL, publicKey, updatedAt }
 // Following: follows/{uid}/{targetUid} = true
