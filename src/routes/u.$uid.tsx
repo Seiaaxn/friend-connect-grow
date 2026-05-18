@@ -3,7 +3,7 @@ import { ArrowLeft, MessageCircle, UserPlus, UserMinus, Loader2 } from "lucide-r
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
-import { useProfile, useFollowing, useFollowers, follow, unfollow, isMutual, upsertProfile } from "@/lib/social";
+import { useProfile, useFollowing, useFollowers, follow, unfollow, isMutual, upsertProfile, useXp } from "@/lib/social";
 import { ensureKeypair } from "@/lib/crypto";
 import { RoleBadge } from "@/components/Badges";
 
