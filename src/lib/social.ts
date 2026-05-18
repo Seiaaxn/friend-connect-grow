@@ -60,16 +60,86 @@ export type PublicProfile = {
 };
 
 export async function upsertProfile(p: PublicProfile) {
-  // Use update so we don't wipe an existing publicKey when we only refresh
-  // basic identity fields.
-  const patch: Record<string, unknown> = {
-    displayName: p.displayName ?? null,
-    email: p.email ?? null,
-    photoURL: p.photoURL ?? null,
-    updatedAt: serverTimestamp(),
-  };
-  if (p.publicKey !== undefined) patch.publicKey = p.publicKey;
+  // Only fill missing identity fields — never overwrite a user's
+  // custom displayName / photoURL on subsequent logins.
+  const existing = (await get(ref(db, `users/${p.uid}`))).val() as
+    | Partial<PublicProfile>
+    | null;
+  const patch: Record<string, unknown> = { updatedAt: serverTimestamp() };
+  if (!existing?.displayName && p.displayName) patch.displayName = p.displayName;
+  if (!existing?.photoURL && p.photoURL) patch.photoURL = p.photoURL;
+  if (p.email && existing?.email !== p.email) patch.email = p.email;
+  if (p.publicKey !== undefined && !existing?.publicKey) patch.publicKey = p.publicKey;
   await update(ref(db, `users/${p.uid}`), patch);
+}
+
+// Explicit edits from the profile owner — overwrites the given fields.
+export async function updateOwnProfile(
+  uid: string,
+  patch: { displayName?: string; photoURL?: string },
+) {
+  await update(ref(db, `users/${uid}`), { ...patch, updatedAt: serverTimestamp() });
+}
+
+// ============= Watch history =============
+export type WatchEntry = {
+  episodeId: string;
+  animeId?: string;
+  title: string;
+  poster?: string;
+  ts: number;
+};
+
+export async function recordWatch(uid: string, entry: Omit<WatchEntry, "ts">) {
+  if (!uid || !entry.episodeId) return;
+  await set(ref(db, `history/${uid}/${entry.episodeId}`), {
+    ...entry,
+    ts: Date.now(),
+  });
+}
+
+export function useWatchHistory(uid?: string, max = 24) {
+  const [list, setList] = useState<WatchEntry[]>([]);
+  useEffect(() => {
+    if (!uid) { setList([]); return; }
+    const unsub = onValue(ref(db, `history/${uid}`), (snap) => {
+      const arr: WatchEntry[] = [];
+      snap.forEach((c) => { arr.push(c.val() as WatchEntry); });
+      arr.sort((a, b) => (b.ts ?? 0) - (a.ts ?? 0));
+      setList(arr.slice(0, max));
+    });
+    return () => unsub();
+  }, [uid, max]);
+  return list;
+}
+
+// ============= Image helpers =============
+// Resize + compress a file to a JPEG data URL suitable for RTDB storage.
+export async function fileToCompressedDataUrl(
+  file: File,
+  maxSize = 384,
+  quality = 0.82,
+): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = url;
+    });
+    const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas tidak tersedia.");
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL("image/jpeg", quality);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export async function getPublicKey(uid: string): Promise<JsonWebKey | null> {
