@@ -20,6 +20,7 @@ function ProfilePage() {
   const following = useFollowing(uid);
   const followers = useFollowers(uid);
   const myFollowing = useFollowing(user?.uid);
+  const { xp, level, current, needed, progress } = useXp(uid);
   const [busy, setBusy] = useState(false);
 
   // Self profile sync + ensure E2E keypair is published.
