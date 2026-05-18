@@ -25,6 +25,7 @@ function WatchPage() {
   const { episodeId } = Route.useParams();
   const router = useRouter();
   const nav = useNavigate();
+  const { user } = useAuth();
   const [activeServer, setActiveServer] = useState<string | null>(null);
   const [activeServerLabel, setActiveServerLabel] = useState<string | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | undefined>();
