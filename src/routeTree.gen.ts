@@ -21,6 +21,7 @@ import { Route as ListListIdRouteImport } from './routes/list.$listId'
 import { Route as GenreGenreIdRouteImport } from './routes/genre.$genreId'
 import { Route as ChatPeerIdRouteImport } from './routes/chat.$peerId'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
+import { Route as UUidFollowingRouteImport } from './routes/u.$uid.following'
 import { Route as UUidFollowersRouteImport } from './routes/u.$uid.followers'
 
 const TrendingRoute = TrendingRouteImport.update({
@@ -83,6 +84,11 @@ const AnimeAnimeIdRoute = AnimeAnimeIdRouteImport.update({
   path: '/anime/$animeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUidFollowingRoute = UUidFollowingRouteImport.update({
+  id: '/following',
+  path: '/following',
+  getParentRoute: () => UUidRoute,
+} as any)
 const UUidFollowersRoute = UUidFollowersRouteImport.update({
   id: '/followers',
   path: '/followers',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
   '/u/$uid/followers': typeof UUidFollowersRoute
+  '/u/$uid/following': typeof UUidFollowingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
   '/u/$uid/followers': typeof UUidFollowersRoute
+  '/u/$uid/following': typeof UUidFollowingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/u/$uid': typeof UUidRouteWithChildren
   '/watch/$episodeId': typeof WatchEpisodeIdRoute
   '/u/$uid/followers': typeof UUidFollowersRoute
+  '/u/$uid/following': typeof UUidFollowingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/u/$uid'
     | '/watch/$episodeId'
     | '/u/$uid/followers'
+    | '/u/$uid/following'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/u/$uid'
     | '/watch/$episodeId'
     | '/u/$uid/followers'
+    | '/u/$uid/following'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/u/$uid'
     | '/watch/$episodeId'
     | '/u/$uid/followers'
+    | '/u/$uid/following'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimeAnimeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$uid/following': {
+      id: '/u/$uid/following'
+      path: '/following'
+      fullPath: '/u/$uid/following'
+      preLoaderRoute: typeof UUidFollowingRouteImport
+      parentRoute: typeof UUidRoute
+    }
     '/u/$uid/followers': {
       id: '/u/$uid/followers'
       path: '/followers'
@@ -296,10 +315,12 @@ declare module '@tanstack/react-router' {
 
 interface UUidRouteChildren {
   UUidFollowersRoute: typeof UUidFollowersRoute
+  UUidFollowingRoute: typeof UUidFollowingRoute
 }
 
 const UUidRouteChildren: UUidRouteChildren = {
   UUidFollowersRoute: UUidFollowersRoute,
+  UUidFollowingRoute: UUidFollowingRoute,
 }
 
 const UUidRouteWithChildren = UUidRoute._addFileChildren(UUidRouteChildren)
