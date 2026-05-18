@@ -6,7 +6,7 @@ import { svEpisode, svServer } from "@/lib/sankavollerei";
 import { toast } from "sonner";
 import { CommentBox } from "@/components/CommentBox";
 import { useAuth } from "@/lib/useAuth";
-import { awardWatchXp } from "@/lib/social";
+import { awardWatchXp, recordWatch } from "@/lib/social";
 
 export const Route = createFileRoute("/watch/$episodeId")({
   component: WatchPage,
@@ -64,16 +64,21 @@ function WatchPage() {
     }
   }, [data, streamUrl]);
 
-  // Award XP for watching (once per episode per 6h)
+  // Award XP + record history when a stream actually plays
   useEffect(() => {
-    if (!user || !episodeId || !streamUrl) return;
+    if (!user || !episodeId || !streamUrl || !data) return;
+    recordWatch(user.uid, {
+      episodeId,
+      title: data.title || episodeId,
+      poster: data.poster,
+    }).catch(() => {});
     const t = setTimeout(() => {
       awardWatchXp(user.uid, episodeId, 10)
         .then((ok) => { if (ok) toast.success("+10 XP"); })
         .catch(() => {});
     }, 30_000);
     return () => clearTimeout(t);
-  }, [user, episodeId, streamUrl]);
+  }, [user, episodeId, streamUrl, data]);
 
   const pickServer = async (id: string, label: string) => {
     setLoadingServer(true);
